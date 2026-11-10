@@ -1,7 +1,10 @@
 package herrcht.server.identity.user.web;
 
+import herrcht.server.identity.user.dto.LoginRequest;
+import herrcht.server.identity.user.dto.LoginResponse;
 import herrcht.server.identity.user.dto.RegisterUserRequest;
 import herrcht.server.identity.user.dto.RegisterUserResponse;
+import herrcht.server.identity.user.usecase.LoginUserUseCase;
 import herrcht.server.identity.user.usecase.RegisterUserUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +23,13 @@ public class AuthController {
     public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         RegisterUserResponse response = registerUserUseCase.execute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    private final LoginUserUseCase loginUserUseCase;
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = loginUserUseCase.execute(request);
+        return ResponseEntity.ok(response);
     }
 }

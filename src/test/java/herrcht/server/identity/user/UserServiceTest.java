@@ -3,6 +3,7 @@ package herrcht.server.identity.user;
 import herrcht.server.identity.recovery.UserEmailEntity;
 import herrcht.server.identity.recovery.UserEmailRepository;
 import herrcht.server.identity.user.exception.EmailAlreadyExistsException;
+import herrcht.server.identity.user.exception.InvalidCredentialsException;
 import herrcht.server.identity.user.exception.UsernameAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -125,5 +127,38 @@ class UserServiceTest {
         assertNotNull(savedUser);
         verify(userEmailRepository, never()).existsByEmail(any());
         verify(userRepository).save(userEntity);
+    }
+
+    @Test
+    @DisplayName("Deve lançar InvalidCredentialsException quando usuário não for encontrado")
+    void shouldThrowExceptionWhenUserNotFoundOnLogin() {
+        when(userRepository.findByUsername("unknownUser")).thenReturn(Optional.empty());
+
+        assertThrows(InvalidCredentialsException.class,
+                () -> userService.authenticate("unknownUser", "anyPassword"));
+
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Deve lançar InvalidCredentialsException quando a senha não corresponder ao hash")
+    void shouldThrowExceptionWhenPasswordDoesNotMatch() {
+        when(userRepository.findByUsername("player1")).thenReturn(Optional.of(userEntity));
+        when(passwordEncoder.matches("wrongPassword", userEntity.getPassword())).thenReturn(false);
+
+        assertThrows(InvalidCredentialsException.class,
+                () -> userService.authenticate("player1", "wrongPassword"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar a entidade do usuário quando o username e a senha forem válidos")
+    void shouldAuthenticateSuccessfully() {
+        when(userRepository.findByUsername("player1")).thenReturn(Optional.of(userEntity));
+        when(passwordEncoder.matches("correctPassword", userEntity.getPassword())).thenReturn(true);
+
+        UserEntity authenticatedUser = userService.authenticate("player1", "correctPassword");
+
+        assertNotNull(authenticatedUser);
+        assertEquals("player1", authenticatedUser.getUsername());
     }
 }

@@ -2,6 +2,7 @@ package herrcht.server.identity.user;
 
 import herrcht.server.identity.recovery.UserEmailRepository;
 import herrcht.server.identity.user.exception.EmailAlreadyExistsException;
+import herrcht.server.identity.user.exception.InvalidCredentialsException;
 import herrcht.server.identity.user.exception.UsernameAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +30,22 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return userRepository.save(user);
+    }
+
+    /**
+     * Autentica o usuário validando a existência do username e a correspondência do hash da senha.
+     * Retorna a entidade do usuário se as credenciais forem válidas.
+     */
+    @Transactional(readOnly = true)
+    public UserEntity authenticate(String username, String rawPassword) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(InvalidCredentialsException::new);
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new InvalidCredentialsException();
+        }
+
+        return user;
     }
 
     private void validateUsernameAvailability(String username) {
