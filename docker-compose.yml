@@ -1,0 +1,20 @@
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: herrcht-postgres-dev
+        environment:
+            POSTGRES_DB: herrcht_db
+            POSTGRES_USER: herrcht_user
+            POSTGRES_PASSWORD: herrcht_password
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_dev_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U herrcht_user -d herrcht_db" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    postgres_dev_data:
