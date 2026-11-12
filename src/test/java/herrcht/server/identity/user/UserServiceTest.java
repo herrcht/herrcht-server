@@ -2,6 +2,7 @@ package herrcht.server.identity.user;
 
 import herrcht.server.identity.recovery.UserEmailEntity;
 import herrcht.server.identity.recovery.UserEmailRepository;
+import herrcht.server.identity.user.dto.LoginResponse;
 import herrcht.server.identity.user.exception.EmailAlreadyExistsException;
 import herrcht.server.identity.user.exception.InvalidCredentialsException;
 import herrcht.server.identity.user.exception.UsernameAlreadyExistsException;
@@ -151,14 +152,17 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar a entidade do usuário quando o username e a senha forem válidos")
+    @DisplayName("Deve retornar LoginResponse com accessToken preenchido e sessionToken nulo quando as credenciais forem válidas")
     void shouldAuthenticateSuccessfully() {
         when(userRepository.findByUsername("player1")).thenReturn(Optional.of(userEntity));
         when(passwordEncoder.matches("correctPassword", userEntity.getPassword())).thenReturn(true);
 
-        UserEntity authenticatedUser = userService.authenticate("player1", "correctPassword");
+        LoginResponse response = userService.authenticate("player1", "correctPassword");
 
-        assertNotNull(authenticatedUser);
-        assertEquals("player1", authenticatedUser.getUsername());
+        assertNotNull(response);
+        assertEquals("player1", response.username());
+        assertNotNull(response.accessToken());
+        assertTrue(response.accessToken().startsWith("dummy-access-token-"));
+        assertNull(response.sessionToken());
     }
 }

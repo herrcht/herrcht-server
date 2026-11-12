@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/v1.0/000-spring-modulith.yaml
   - include:
       file: db/changelog/v1.0/001-create-identity-tables.yaml
+  - include:
+      file: db/changelog/v1.0/002-create-session-tables.yaml

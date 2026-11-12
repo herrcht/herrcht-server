@@ -2,6 +2,10 @@ spring:
   config:
     activate:
       on-profile: dev
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   datasource:
     url: jdbc:postgresql://localhost:5432/herrcht_db
@@ -32,6 +36,10 @@ logging:
 
 herrcht:
   security:
-    email-recovery-mode: OPTIONAL # Opções: DISABLED, OPTIONAL, REQUIRED
-    max-profiles-per-user: 5      # 0 = sem limites
-    max-emails-per-user: 3        # 0 = sem limites
+    email-recovery-mode: OPTIONAL
+    max-profiles-per-user: 5
+    max-emails-per-user: 3
+  session:
+    store-type: DATABASE     # Opções: NONE, IN_MEMORY, DATABASE, REDIS
+    session-ttl-days: 30      # Min: 1 | Max: 180
+    access-ttl-minutes: 15    # Min: 5 | Max: 240 (se store-type=NONE, reduz para max 30)

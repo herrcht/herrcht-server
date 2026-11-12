@@ -1,6 +1,7 @@
 package herrcht.server.identity.user;
 
 import herrcht.server.identity.recovery.UserEmailRepository;
+import herrcht.server.identity.user.dto.LoginResponse;
 import herrcht.server.identity.user.exception.EmailAlreadyExistsException;
 import herrcht.server.identity.user.exception.InvalidCredentialsException;
 import herrcht.server.identity.user.exception.UsernameAlreadyExistsException;
@@ -34,10 +35,10 @@ public class UserService {
 
     /**
      * Autentica o usuário validando a existência do username e a correspondência do hash da senha.
-     * Retorna a entidade do usuário se as credenciais forem válidas.
+     * Retorna o LoginResponse contendo o accessToken dummy e sessionToken nulo.
      */
     @Transactional(readOnly = true)
-    public UserEntity authenticate(String username, String rawPassword) {
+    public LoginResponse authenticate(String username, String rawPassword) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(InvalidCredentialsException::new);
 
@@ -45,7 +46,15 @@ public class UserService {
             throw new InvalidCredentialsException();
         }
 
-        return user;
+        // Stub/Dummy de token de acesso temporário enquanto o módulo de sessão/JWT é finalizado
+        String dummyAccessToken = "dummy-access-token-" + user.getId();
+
+        return new LoginResponse(
+                user.getId(),
+                user.getUsername(),
+                dummyAccessToken,
+                null
+        );
     }
 
     private void validateUsernameAvailability(String username) {

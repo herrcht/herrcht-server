@@ -5,5 +5,6 @@ import java.util.UUID;
 public record LoginResponse(
         UUID userId,
         String username,
-        String message
+        String accessToken,
+        String sessionToken
 ) {}

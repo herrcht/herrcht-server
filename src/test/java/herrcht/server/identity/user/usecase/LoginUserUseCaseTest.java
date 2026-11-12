@@ -27,25 +27,27 @@ class LoginUserUseCaseTest {
     private LoginUserUseCase loginUserUseCase;
 
     @Test
-    @DisplayName("Deve autenticar com sucesso e retornar LoginResponse")
+    @DisplayName("Deve autenticar com sucesso e delegar o retorno do UserService")
     void shouldLoginSuccessfully() {
         LoginRequest request = new LoginRequest("player1", "password123");
         UUID userId = UUID.randomUUID();
 
-        UserEntity userMock = UserEntity.builder()
-                .id(userId)
-                .username("player1")
-                .password("hashedPassword")
-                .build();
+        LoginResponse expectedResponse = new LoginResponse(
+                userId,
+                "player1",
+                "dummy-access-token-" + userId,
+                null
+        );
 
-        when(userService.authenticate("player1", "password123")).thenReturn(userMock);
+        when(userService.authenticate("player1", "password123")).thenReturn(expectedResponse);
 
         LoginResponse response = loginUserUseCase.execute(request);
 
         assertNotNull(response);
         assertEquals(userId, response.userId());
         assertEquals("player1", response.username());
-        assertEquals("Autenticação realizada com sucesso! (Modo Dummy)", response.message());
+        assertEquals("dummy-access-token-" + userId, response.accessToken());
+        assertNull(response.sessionToken());
 
         verify(userService).authenticate("player1", "password123");
     }
